@@ -17,6 +17,7 @@ class VacancyLevel extends Model
     {
         $marks = ['empty' => '×', 'few' => '△', 'enough' => '◎'];
         $slug = $this->slug();
+        // assert() は、指定したassertionを調べて、結果がFALSEの場合に適切な動作をします。
         assert(isset($marks[$slug]), new \DomainException('invalid slug value.'));
 
         return $marks[$slug];
