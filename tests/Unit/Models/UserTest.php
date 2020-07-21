@@ -3,6 +3,8 @@
 namespace Tests\Unit\Models;
 
 use App\Models\User;
+use App\Models\Lesson;
+use Mockery;
 use PHPUnit\Framework\TestCase;
 
 class UserTest extends TestCase
@@ -17,9 +19,17 @@ class UserTest extends TestCase
      */
     public function testCanReserve(string $plan, int $remainingCount, int $reservationCount, bool $canReserve)
     {
-        $user = new User();
+        /** @var User $user */
+        $user = Mockery::mock(User::class)->makePartial(); // makePartialで、パーシャルモックになる
+        $user->shouldReceive('reservationCountThisMonth')->andReturn($reservationCount);
         $user->plan = $plan;
-        $this->assertSame($canReserve, $user->canReserve($remainingCount, $reservationCount));
+
+        // Mockery でモックを作ると、変数の型が Mock になってしまうので、DocComment でドメインの型を指定しておく
+        /** @var Lesson $lesson */
+        $lesson = Mockery::mock(Lesson::class);
+        $lesson->shouldReceive('remainingCount')->andReturn($remainingCount);
+
+        $this->assertSame($canReserve, $user->canReserve($lesson));
     }
 
     public function dataCanReserve()

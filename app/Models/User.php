@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -37,14 +39,32 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function canReserve(int $remainingCount, int $reservationCount): bool
+    public function canReserve(Lesson $lesson): bool
     {
-        if ($remainingCount === 0) {
+        if ($lesson->remainingCount() === 0) {
             return false;
         }
         if ($this->plan === 'gold') {
             return true;
         }
-        return $reservationCount < 5;
+        return $this->reservationCountThisMonth() < 5;
+    }
+
+    public function reservations(): hasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function reservationCountThisMonth(): int
+    {
+        $today = Carbon::today();
+        return $this->reservations()
+            ->whereYear('cretated_at', $today->year)
+            ->whereMonth('cretated_at', $today->month)
+            ->count();
+        // あるいは以下のようにひとまとめにしてもいいでしょう
+        // return $this->reservations()
+        //    ->whereRaw("DATE_FORMAT(created_at, '%Y%m') = ?", $today->format('Ym'))
+        //    ->count();
     }
 }
