@@ -2,8 +2,9 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\User;
 use App\Models\Lesson;
+use App\Models\User;
+use App\Models\UserProfile;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -14,6 +15,7 @@ class UserTest extends TestCase
      * @param string $plan
      * @param int $remainingCount
      * @param int $reservationCount
+     * @throws \Exception
      * @dataProvider dataCanReserve_正常
      */
     public function testCanReserve_正常(string $plan, int $remainingCount, int $reservationCount)
@@ -21,7 +23,8 @@ class UserTest extends TestCase
         /** @var User $user */
         $user = Mockery::mock(User::class)->makePartial(); // makePartialで、パーシャルモックになる
         $user->shouldReceive('reservationCountThisMonth')->andReturn($reservationCount);
-        $user->plan = $plan;
+        $user->profile = new UserProfile();
+        $user->profile->plan = $plan;
 
         // Mockery でモックを作ると、変数の型が Mock になってしまうので、DocComment でドメインの型を指定しておく
         /** @var Lesson $lesson */
@@ -38,6 +41,7 @@ class UserTest extends TestCase
      * @param int $remainingCount
      * @param int $reservationCount
      * @param string $errorMessage
+     * @throws \Exception
      * @dataProvider dataCanReserve_異常
      */
     public function testCanReserve_エラー(string $plan, int $remainingCount, int $reservationCount, string $errorMessage)
@@ -45,7 +49,8 @@ class UserTest extends TestCase
         /** @var User $user */
         $user = Mockery::mock(User::class)->makePartial();
         $user->shouldReceive('reservationCountThisMonth')->andReturn($reservationCount);
-        $user->plan = $plan;
+        $user->profile = new UserProfile();
+        $user->profile->plan = $plan;
 
         /** @var Lesson $lesson */
         $lesson = Mockery::mock(Lesson::class);
