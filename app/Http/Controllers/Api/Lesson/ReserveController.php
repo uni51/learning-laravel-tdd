@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Lesson;
+namespace App\Http\Controllers\Api\Lesson;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use App\Models\Reservation;
-use App\Notifications\ReservationCompleted;
 use Exception;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class ReserveController extends Controller
@@ -19,10 +19,8 @@ class ReserveController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => '予約できません。：' . $e->getMessage()], Response::HTTP_CONFLICT);
         }
-        Reservation::create(['lesson_id' => $lesson->id, 'user_id' => $user->id]);
+        $reservation = Reservation::create(['lesson_id' => $lesson->id, 'user_id' => $user->id]);
 
-        $user->notify(new ReservationCompleted($lesson));
-
-        return redirect()->route('lessons.show', ['lesson' => $lesson]);
+        return response()->json($reservation, Response::HTTP_CREATED);
     }
 }
